@@ -1,38 +1,5 @@
-
-
 import Foundation
 import Dispatch
-
-enum Result<T> {
-    case error(Error)
-    case success(T)
-}
-
-class Promise<T> {
-    
-    let dispatchQueue: DispatchQueue
-    
-    let future: Future<T>
-    
-    init() {
-        
-        future = Future<T>()
-        
-        dispatchQueue = DispatchQueue(label: "promise",
-                                      qos: .userInitiated,
-                                      attributes: .concurrent)
-    }
-    
-    func completeWithSuccess(value: T) {
-        future.notify(.success(value))
-    }
-    
-    func completeWithFail(error: Error) {
-        future.notify(.error(error))
-    }
-    
-}
-
 
 class Future<T> {
     
@@ -49,7 +16,7 @@ class Future<T> {
         switch value {
         case .success(let a):
             dispatchQueue?.async {
-            
+                
                 self.onCompletion?(a)
                 
             }
@@ -62,13 +29,13 @@ class Future<T> {
     }
     
     /**
-    Set up a routine for when the Future has a successful value.
- 
-    - parameter qos:                Quality service level of the returned completionHandler
-    - parameter completionHandler:  Callback with a successful value
-    
-    - returns: new Future
-    */
+     Set up a routine for when the Future has a successful value.
+     
+     - parameter qos:                Quality service level of the returned completionHandler
+     - parameter completionHandler:  Callback with a successful value
+     
+     - returns: new Future
+     */
     public func onSuccess(qos: DispatchQoS,
                           completionHander: @escaping (T)->Void) -> Future<T> {
         
@@ -79,12 +46,12 @@ class Future<T> {
     }
     
     /**
-    Set up a routine if there is an error.
-    
-    - parameter completionHandler:  Callback with an error
- 
-    - returns: new Future
-    */
+     Set up a routine if there is an error.
+     
+     - parameter completionHandler:  Callback with an error
+     
+     - returns: new Future
+     */
     public func onFailure(completionHander: @escaping (Error)->Void) -> Future<T> {
         
         onFailure = completionHander
@@ -92,9 +59,10 @@ class Future<T> {
         return self
     }
     
+    public func then(completionHandler: @escaping (T)->Void) -> Future<T> {
+        // TODO: Unimplemented
+        return Future()
+    }
+    
 }
-
-
-
-
 

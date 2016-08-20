@@ -32,29 +32,44 @@ class FutureLibTests: XCTestCase {
     }
     
     
-    func testExample() {
+    func testGetGoodCity() {
+        
+        let expectation1 = expectation(description: "Testing good city")
+        let newNumber = getCityTemperature(withName: "Austin")
+        newNumber.onSuccess(qos: .userInitiated) { value in
+            print(value)
+            XCTAssertEqual(value, 98.6)
+            expectation1.fulfill()
+        }
+        .onFailure { error in
+            XCTFail()
+        }
+        
+        waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
+    }
+    
+    func testGetBadCity() {
+        
+        let expectation2 = expectation(description: "Testing bad city")
         
         let newNumber = getCityTemperature(withName: "Seattle")
         newNumber.onSuccess(qos: .userInitiated) { value in
-            
-            print(value)
-            
-            
+            XCTFail()
         }
         .onFailure { error in
-                
-                print(error)
+            print(error)
+            expectation2.fulfill()
         }
-
-        sleep(2)
         
+        waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
         
     }
 
 
     static var allTests : [(String, (FutureLibTests) -> () throws -> Void)] {
         return [
-            ("testExample", testExample),
+            ("testGetBadCity", testGetBadCity),
+            ("testGetGoodCity", testGetGoodCity)
         ]
     }
 }
