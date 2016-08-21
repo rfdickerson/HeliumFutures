@@ -20,7 +20,7 @@ class FutureLibTests: XCTestCase {
         p.dispatchQueue.async {
             
             if name == "Austin" {
-                sleep(3)
+                sleep(1)
                 p.completeWithSuccess(value: 98.6)
             } else {
                 p.completeWithFail(error: NoCityFound(city: name))
@@ -31,19 +31,37 @@ class FutureLibTests: XCTestCase {
         return p.future
     }
     
-    
     func testGetGoodCity() {
         
         let expectation1 = expectation(description: "Testing good city")
-        let newNumber = getCityTemperature(withName: "Austin")
-        newNumber.onSuccess(qos: .userInitiated) { value in
-            print(value)
-            XCTAssertEqual(value, 98.6)
-            expectation1.fulfill()
-        }
-        .onFailure { error in
-            XCTFail()
-        }
+        getCityTemperature(withName: "Austin")
+            .onSuccess(qos: .userInitiated) { temperature -> Double in
+                print(temperature)
+                XCTAssertEqual(temperature, 98.6)
+                expectation1.fulfill()
+                return temperature
+            }
+            .onSuccess(qos: .userInitiated) { temperature -> Void in
+                print("Temperature was \(temperature)")
+                XCTAssertEqual(temperature, 98.6)
+            }
+            .onFailure { error in
+                XCTFail()
+            }
+        
+        waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
+    }
+    
+    func testBiggerChain() {
+        let expectation3 = expectation(description: "Testing a longer chain")
+        getCityTemperature(withName: "Austin")
+            .onSuccess(qos: .userInitiated) { temperature -> String in
+                return temperature > 90 ? "Hot" : "Cold"
+            }
+            .onSuccess(qos: .userInitiated) { condition -> Void in
+                print("The weather condition is \(condition)")
+                expectation3.fulfill()
+            }
         
         waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
     }
@@ -52,14 +70,14 @@ class FutureLibTests: XCTestCase {
         
         let expectation2 = expectation(description: "Testing bad city")
         
-        let newNumber = getCityTemperature(withName: "Seattle")
-        newNumber.onSuccess(qos: .userInitiated) { value in
-            XCTFail()
-        }
-        .onFailure { error in
-            print(error)
-            expectation2.fulfill()
-        }
+        getCityTemperature(withName: "Seattle")
+            .onSuccess(qos: .userInitiated) { value in
+                XCTFail()
+            }
+            .onFailure { error in
+                print(error)
+                expectation2.fulfill()
+            }
         
         waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
         
@@ -69,7 +87,8 @@ class FutureLibTests: XCTestCase {
     static var allTests : [(String, (FutureLibTests) -> () throws -> Void)] {
         return [
             ("testGetBadCity", testGetBadCity),
-            ("testGetGoodCity", testGetGoodCity)
+            ("testGetGoodCity", testGetGoodCity),
+            ("testBiggerChain", testBiggerChain)
         ]
     }
 }

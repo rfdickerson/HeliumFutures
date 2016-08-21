@@ -3,9 +3,13 @@ import Dispatch
 
 class Future<T> {
     
-    var dispatchQueue: DispatchQueue?
-    var onCompletion: (@escaping (T)->Void)?
-    var onFailure: (@escaping (Error)->Void)?
+    // var dispatchQueue: DispatchQueue?
+    // var onCompletion: (@escaping (T)->Any)?
+    // var onFailureCallback: (@escaping (Error)->Void)?
+    
+    var value: Result<T>?
+    
+    let lock = DispatchSemaphore(value: 0)
     
     public init() {
         
@@ -13,19 +17,9 @@ class Future<T> {
     
     public func notify(_ value: Result<T>) {
         
-        switch value {
-        case .success(let a):
-            dispatchQueue?.async {
-                
-                self.onCompletion?(a)
-                
-            }
-        case .error(let error):
-            
-            self.onFailure?(error)
-            
-        }
-        
+        //lock.wait()
+        self.value = value
+        lock.signal()
     }
     
     /**
@@ -36,13 +30,34 @@ class Future<T> {
      
      - returns: new Future
      */
-    public func onSuccess(qos: DispatchQoS,
-                          completionHander: @escaping (T)->Void) -> Future<T> {
+    @discardableResult
+    public func onSuccess<S>(qos: DispatchQoS,
+                          completionHander: @escaping (T)->S) -> Future<S> {
         
-        onCompletion = completionHander
-        dispatchQueue = DispatchQueue(label: "future", qos: qos, attributes: .concurrent)
+        // onCompletion = completionHander
+        let dispatchQueue = DispatchQueue(label: "future", qos: qos, attributes: .concurrent)
         
-        return self
+        let nextFuture = Future<S>()
+        
+        dispatchQueue.async {
+            
+            self.lock.wait()
+            
+            switch self.value! {
+            case .success(let a):
+                
+                let returnedValue = completionHander(a)
+                nextFuture.notify(.success(returnedValue))
+                
+            case .error(let error):
+                
+                //self.onFailure?(error)
+                nextFuture.notify(.error(error))
+                
+            }
+        }
+        
+        return nextFuture
     }
     
     /**
@@ -52,13 +67,22 @@ class Future<T> {
      
      - returns: new Future
      */
+    @discardableResult
     public func onFailure(completionHander: @escaping (Error)->Void) -> Future<T> {
         
-        onFailure = completionHander
+        self.lock.wait()
+        
+        switch self.value! {
+        case .success:
+            print("This should not happen")
+        case .error(let error):
+            completionHander(error)
+        }
         
         return self
     }
     
+    @discardableResult
     public func then(completionHandler: @escaping (T)->Void) -> Future<T> {
         // TODO: Unimplemented
         return Future()
