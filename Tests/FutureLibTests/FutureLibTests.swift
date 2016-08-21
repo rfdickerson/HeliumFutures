@@ -66,6 +66,23 @@ class FutureLibTests: XCTestCase {
         waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
     }
     
+    func testBiggerChain() {
+        let expectation3 = expectation(description: "Testing a longer chain")
+        getCityTemperature(withName: "Austin")
+            .onSuccess(qos: .userInitiated) { temperature -> String in
+                
+                return temperature > 90 ? "Hot" : "Cold"
+                
+            }
+            .onSuccess(qos: .userInitiated) { condition -> Void in
+                
+                print("The weather condition is \(condition)")
+                expectation3.fulfill()
+            }
+        
+        waitForExpectations(timeout: 5, handler: { error in XCTAssertNil(error, "Timeout") })
+    }
+    
     func testGetBadCity() {
         
         let expectation2 = expectation(description: "Testing bad city")
