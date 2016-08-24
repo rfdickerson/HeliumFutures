@@ -1,7 +1,7 @@
 import XCTest
 import Dispatch
 
-@testable import FutureLib
+@testable import Destiny
 
 class FutureLibTests: XCTestCase {
     
