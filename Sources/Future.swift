@@ -31,11 +31,11 @@ class Future<T> {
      - returns: new Future
      */
     @discardableResult
-    public func onSuccess<S>(qos: DispatchQoS,
+    public func onSuccess<S>(
                           completionHander: @escaping (T)->S) -> Future<S> {
         
         // onCompletion = completionHander
-        let dispatchQueue = DispatchQueue(label: "future", qos: qos, attributes: .concurrent)
+        let dispatchQueue = DispatchQueue(label: "future", qos: .userInitiated, attributes: .concurrent)
         
         let nextFuture = Future<S>()
         

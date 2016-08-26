@@ -6,6 +6,7 @@ import Dispatch
 class FutureLibTests: XCTestCase {
     
     struct NoCityFound: Error, CustomStringConvertible {
+        
         let city: String
         
         var description: String {
@@ -38,6 +39,7 @@ class FutureLibTests: XCTestCase {
     
     
     func getCityTemperature(withName name: String) -> Future<Double> {
+        
         let p = Promise<Double>()
         
         p.dispatchQueue.async {
@@ -59,7 +61,7 @@ class FutureLibTests: XCTestCase {
         let cityExpectation = expectation(description: "Getting the user's city")
         
         getUserCity(withName: "Robert")
-            .onSuccess(qos: .userInitiated) { city -> Void in
+            .onSuccess { city -> Void in
                 print("User's city is \(city)")
                 cityExpectation.fulfill()
                 
@@ -73,13 +75,13 @@ class FutureLibTests: XCTestCase {
         
         let expectation1 = expectation(description: "Testing good city")
         getCityTemperature(withName: "Austin")
-            .onSuccess(qos: .userInitiated) { temperature -> Double in
+            .onSuccess { temperature -> Double in
                 print(temperature)
                 XCTAssertEqual(temperature, 98.6)
                 expectation1.fulfill()
                 return temperature
             }
-            .onSuccess(qos: .userInitiated) { temperature -> Void in
+            .onSuccess { temperature -> Void in
                 print("Temperature was \(temperature)")
                 XCTAssertEqual(temperature, 98.6)
             }
@@ -93,10 +95,10 @@ class FutureLibTests: XCTestCase {
     func testBiggerChain() {
         let expectation3 = expectation(description: "Testing a longer chain")
         getCityTemperature(withName: "Austin")
-            .onSuccess(qos: .userInitiated) { temperature -> String in
+            .onSuccess { temperature -> String in
                 return temperature > 90 ? "Hot" : "Cold"
             }
-            .onSuccess(qos: .userInitiated) { condition -> Void in
+            .onSuccess { condition -> Void in
                 print("The weather condition is \(condition)")
                 expectation3.fulfill()
             }
@@ -110,7 +112,7 @@ class FutureLibTests: XCTestCase {
         let expectation2 = expectation(description: "Testing bad city")
         
         getCityTemperature(withName: "Seattle")
-            .onSuccess(qos: .userInitiated) { value in
+            .onSuccess{ value in
                 XCTFail()
             }
             .onFailure { error in
