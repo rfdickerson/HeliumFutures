@@ -36,6 +36,7 @@ class FutureLibTests: XCTestCase {
         
     }
     
+    
     func getCityTemperature(withName name: String) -> Future<Double> {
         let p = Promise<Double>()
         
