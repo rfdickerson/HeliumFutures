@@ -46,7 +46,7 @@ class Future<T> {
      - returns: new Future
      */
     @discardableResult
-    public func onSuccess<S>( completionHander: @escaping (T)->S ) -> Future<S> {
+    public func onSuccess<S>( completionHander: @escaping (T) throws ->S ) -> Future<S> {
         
         let nextFuture = Future<S>()
         
@@ -61,8 +61,12 @@ class Future<T> {
             switch value {
             case .success(let a):
                 
-                let returnedValue = completionHander(a)
+                do {
+                let returnedValue = try completionHander(a)
                 nextFuture.notify(.success(returnedValue))
+                } catch {
+                    // nextFuture.notify(.error())
+                }
                 
             case .error(let error):
                 
