@@ -1,6 +1,6 @@
 import XCTest
-@testable import FutureLibTests
+@testable import IleriTests
 
 XCTMain([
-     testCase(FutureLibTests.allTests),
+     testCase(IleriTests.allTests),
 ])

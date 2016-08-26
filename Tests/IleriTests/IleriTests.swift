@@ -1,9 +1,9 @@
 import XCTest
 import Dispatch
 
-@testable import Destiny
+@testable import Ileri
 
-class FutureLibTests: XCTestCase {
+class IleriTests: XCTestCase {
     
     struct NoCityFound: Error, CustomStringConvertible {
         
@@ -125,7 +125,7 @@ class FutureLibTests: XCTestCase {
     }
 
 
-    static var allTests : [(String, (FutureLibTests) -> () throws -> Void)] {
+    static var allTests : [(String, (IleriTests) -> () throws -> Void)] {
         return [
             ("testGetBadCity", testGetBadCity),
             ("testGetGoodCity", testGetGoodCity),
