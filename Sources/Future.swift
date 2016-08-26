@@ -13,25 +13,28 @@
 import Foundation
 import Dispatch
 
+let futureQueue = DispatchQueue(label: "future", qos: .userInitiated, attributes: .concurrent)
+
 class Future<T> {
-    
-    // var dispatchQueue: DispatchQueue?
-    // var onCompletion: (@escaping (T)->Any)?
-    // var onFailureCallback: (@escaping (Error)->Void)?
     
     var value: Result<T>?
     
-    let lock = DispatchSemaphore(value: 0)
+    let lock = DispatchSemaphore(value: 1)
     
-    public init() {
-        
-    }
+    let semaphore = DispatchSemaphore(value: 0)
+    
+    // let group = DispatchGroup()
+    
+    public init() { }
     
     public func notify(_ value: Result<T>) {
         
-        //lock.wait()
+        lock.wait()
         self.value = value
         lock.signal()
+        
+        semaphore.signal()
+        
     }
     
     /**
@@ -43,19 +46,19 @@ class Future<T> {
      - returns: new Future
      */
     @discardableResult
-    public func onSuccess<S>(qos: DispatchQoS,
-                          completionHander: @escaping (T)->S) -> Future<S> {
-        
-        // onCompletion = completionHander
-        let dispatchQueue = DispatchQueue(label: "future", qos: qos, attributes: .concurrent)
+    public func onSuccess<S>( completionHander: @escaping (T)->S ) -> Future<S> {
         
         let nextFuture = Future<S>()
         
-        dispatchQueue.async {
+        futureQueue.sync() {
+            
+            semaphore.wait()
             
             self.lock.wait()
+            let value = self.value!
+            self.lock.signal()
             
-            switch self.value! {
+            switch value {
             case .success(let a):
                 
                 let returnedValue = completionHander(a)
@@ -63,10 +66,10 @@ class Future<T> {
                 
             case .error(let error):
                 
-                //self.onFailure?(error)
                 nextFuture.notify(.error(error))
                 
             }
+            
         }
         
         return nextFuture
@@ -82,14 +85,20 @@ class Future<T> {
     @discardableResult
     public func onFailure(completionHander: @escaping (Error)->Void) -> Future<T> {
         
-        self.lock.wait()
+        semaphore.wait()
         
-        switch self.value! {
-        case .success:
-            print("This should not happen")
+        self.lock.wait()
+        let value = self.value!
+        self.lock.signal()
+        
+        switch value {
         case .error(let error):
             completionHander(error)
+        default:
+            break
         }
+        
+        
         
         return self
     }
