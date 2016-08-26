@@ -1,4 +1,4 @@
-# Destiny
+# Ileri
 
 Elegant and lightweight Futures for Swift 3
 
@@ -6,7 +6,7 @@ Elegant and lightweight Futures for Swift 3
 
 ```swift
 let temperatureFuture = getCityTemperature(withName: "Austin")
-    .onSuccess(qos: .userInitiated) { value in
+    .onSuccess { value in
         print(value)
     }.onFailure { error in
         print(error)
