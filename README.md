@@ -6,7 +6,7 @@ Elegant and lightweight Futures for Swift 3
 
 ```swift
 let temperatureFuture = getCityTemperature(withName: "Austin")
-    .onSuccess { value in
+    .onSuccess { value -> Void in
         print(value)
     }.onFailure { error in
         print(error)
