@@ -8,6 +8,12 @@
 import XCTest
 import Dispatch
 
+#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+	import Darwin
+#elseif os(Linux)
+	import Glibc
+#endif
+
 @testable import HeliumFutures
 
 class HeliumFuturesTests: XCTestCase {

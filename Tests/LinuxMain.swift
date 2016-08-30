@@ -6,8 +6,8 @@
 */
 
 import XCTest
-@testable import HeliumLoggerTests
+@testable import HeliumFuturesTests
 
 XCTMain([
-     testCase(HeliumLoggerTests.allTests),
+     testCase(HeliumFuturesTests.allTests),
 ])
